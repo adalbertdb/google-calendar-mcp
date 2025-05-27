@@ -4,7 +4,10 @@ import jakarta.enterprise.context.ApplicationScoped;
 import org.apache.camel.ProducerTemplate;
 import jakarta.inject.Inject;
 
-@ApplicationScoped // Standard Quarkus annotation
+import java.io.PrintWriter;
+import java.io.StringWriter;
+
+@ApplicationScoped
 public class CalendarMcpService {
 
     @Inject
@@ -14,7 +17,9 @@ public class CalendarMcpService {
         try {
             return producerTemplate.requestBody("direct:createEvent", input, String.class);
         } catch (Exception e) {
-            return "Error: " + e.getMessage();
+            StringWriter sw = new StringWriter();
+            e.printStackTrace(new PrintWriter(sw));
+            return "Error: " + sw.toString(); // <-- muestra todo el error
         }
     }
 }
