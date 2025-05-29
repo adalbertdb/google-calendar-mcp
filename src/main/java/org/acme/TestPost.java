@@ -9,7 +9,7 @@ public class TestPost {
     public static void main(String[] args) throws Exception {
         HttpClient client = HttpClient.newHttpClient();
 
-        String body = "create event: Reunión importante, Oficina Central, Reunión para discutir proyecto, 2025-05-27T15:00:00+02:00, 2025-05-27T16:00:00+02:00";
+        String body = "create event: Reunión importante, Oficina Central, Reunión para discutir proyecto, 2025-05-29T15:00:00+02:00, 2025-05-29T16:00:00+02:00";
 
         HttpRequest request = HttpRequest.newBuilder()
                 .uri(URI.create("http://localhost:8080/calendar/create-event"))

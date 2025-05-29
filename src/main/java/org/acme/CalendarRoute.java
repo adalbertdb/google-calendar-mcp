@@ -4,8 +4,6 @@ import jakarta.enterprise.context.ApplicationScoped;
 import org.apache.camel.builder.RouteBuilder;
 
 import java.time.ZonedDateTime;
-import java.util.HashMap;
-import java.util.Map;
 
 @ApplicationScoped
 public class CalendarRoute extends RouteBuilder {
