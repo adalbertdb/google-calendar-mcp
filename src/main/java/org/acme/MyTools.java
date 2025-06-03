@@ -16,6 +16,11 @@ public class MyTools {
     @Inject
     Calendar calendarService;
 
+    @Tool(description = "hello")
+    String hello(@ToolArg(description = "name") String name) {
+        return "Hello from tool!"+name;
+    }
+
     @Tool(description = "createEvent")
     public String createEvent(
             @ToolArg(description = "summary") String summary,

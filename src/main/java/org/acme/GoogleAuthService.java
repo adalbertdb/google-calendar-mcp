@@ -7,6 +7,7 @@ import com.google.api.client.extensions.jetty.auth.oauth2.LocalServerReceiver;
 import com.google.api.client.googleapis.auth.oauth2.GoogleAuthorizationCodeFlow;
 import com.google.api.client.googleapis.auth.oauth2.GoogleClientSecrets;
 import com.google.api.client.json.JsonFactory;
+import com.google.api.client.json.gson.GsonFactory;
 import com.google.api.client.json.jackson2.JacksonFactory;
 import com.google.api.client.util.store.FileDataStoreFactory;
 import jakarta.enterprise.context.ApplicationScoped;
@@ -33,16 +34,18 @@ public class GoogleAuthService {
                 .setAccessType("offline")
                 .build();
         LocalServerReceiver receiver = new LocalServerReceiver.Builder().setPort(8888).build();
-        AuthorizationCodeInstalledApp app = new AuthorizationCodeInstalledApp(flow, receiver, url -> {
+        AuthorizationCodeInstalledApp app = new AuthorizationCodeInstalledApp(flow, receiver, authEndpoint -> {
             if (Desktop.isDesktopSupported()) {
                 try {
-                    Desktop.getDesktop().browse(new URI(url));
+                    Desktop.getDesktop().browse(new URI(authEndpoint));
                 } catch (Exception e) {
                     System.err.println("Failed to open browser: " + e.getMessage());
                 }
             } else {
-                System.out.println("Please visit: " + url);
+                System.out.println("Please visit: " + authEndpoint);
             }
+            System.out.println("Please visit: " + authEndpoint);
+            org.jboss.logging.Logger.getLogger(GoogleAuthService.class).info("Auth endpoint URL: " + authEndpoint);
         });
         return app.authorize("user");
     }
