@@ -35,7 +35,7 @@
         <!-- Quarkus MCP Server stdio -->
         <dependency>
             <groupId>io.quarkiverse.mcp</groupId>
-            <artifactId>quarkus-mcp-server-stdio</artifactId>
+            <artifactId>quarkus-mcp-server-sse</artifactId>
             <version>1.2.0</version>
         </dependency>
 
