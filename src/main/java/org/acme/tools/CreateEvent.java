@@ -53,7 +53,7 @@ public class CreateEvent{
             throw new RuntimeException("Unexpected error creating event: " + e.getMessage());
         }
     }
-    private void validateDateTime(String dateTime, String fieldName) {
+    public static void validateDateTime(String dateTime, String fieldName) {
         try {
             new DateTime(dateTime);
         } catch (IllegalArgumentException e) {
