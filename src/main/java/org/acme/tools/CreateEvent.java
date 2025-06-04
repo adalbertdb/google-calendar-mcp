@@ -7,16 +7,18 @@ import com.google.api.services.calendar.model.EventDateTime;
 import io.quarkiverse.mcp.server.Tool;
 import io.quarkiverse.mcp.server.ToolArg;
 import jakarta.inject.Inject;
+import org.acme.tools.extra.EventResponse;
 
 import java.io.IOException;
 
-public class CreateEvent{
+public class CreateEvent {
 
     @Inject
     Calendar calendarService;
 
-    @Tool(description = "Creates a new event in the user's primary Google Calendar. Requires authenticated Google Calendar API access. Possible errors: invalid date format, authentication issues, or API errors.")
-    public String createEvent(
+    @Tool(description = "Creates a new event in the specified Google Calendar and returns the event ID. Requires authenticated Google Calendar API access. Possible errors: invalid date format, authentication issues, or API errors.")
+    public EventResponse createEvent(
+            @ToolArg(description = "The ID of the calendar to create the event in (e.g., 'primary' or 'work123@group.calendar.google.com').") String calendarId,
             @ToolArg(description = "The title or name of the event (e.g., 'Team Meeting').") String summary,
             @ToolArg(description = "The physical or virtual location of the event (e.g., 'Conference Room A' or 'Zoom').") String location,
             @ToolArg(description = "A detailed description of the event (e.g., agenda or notes).") String description,
@@ -25,6 +27,11 @@ public class CreateEvent{
             @ToolArg(description = "The time zone for the event (e.g., 'Europe/Madrid'). Defaults to 'Europe/Madrid' if not provided.") String timeZone
     ) {
         try {
+            // Validate calendarId
+            if (calendarId == null || calendarId.trim().isEmpty()) {
+                throw new IllegalArgumentException("Calendar ID cannot be null or empty.");
+            }
+
             Event event = new Event();
             event.setSummary(summary);
             event.setLocation(location);
@@ -43,8 +50,10 @@ public class CreateEvent{
                     .setTimeZone(timeZone);
             event.setEnd(endTime);
 
-            calendarService.events().insert("primary", event).execute();
-            return "Event created successfully";
+            // Insert the event into the specified calendar
+            Event createdEvent = calendarService.events().insert(calendarId, event).execute();
+            String eventId = createdEvent.getId();
+            return new EventResponse("Event created successfully in calendar: " + calendarId, eventId);
         } catch (IllegalArgumentException e) {
             throw new RuntimeException("Invalid input: " + e.getMessage());
         } catch (IOException e) {
@@ -53,6 +62,7 @@ public class CreateEvent{
             throw new RuntimeException("Unexpected error creating event: " + e.getMessage());
         }
     }
+
     public static void validateDateTime(String dateTime, String fieldName) {
         try {
             new DateTime(dateTime);
