@@ -8,6 +8,7 @@ import com.google.api.services.calendar.model.Events;
 import io.quarkiverse.mcp.server.Tool;
 import io.quarkiverse.mcp.server.ToolArg;
 import jakarta.inject.Inject;
+import org.acme.tools.extra.CalendarSelection;
 
 import java.io.IOException;
 import java.util.List;
@@ -19,17 +20,22 @@ public class DeleteEvent {
     @Inject
     Calendar calendarService;
 
-    @Tool(description = "Deletes events from the specified Google Calendar matching a search query. Requires authenticated Google Calendar API access. Possible errors: no matching events, authentication issues, or API errors.")
+    @Inject
+    SelectCalendarTool selectCalendarTool;
+
+    @Tool(description = "Deletes events from the specified Google Calendar matching a search query.")
     public String deleteEventsByQuery(
-            @ToolArg(description = "The ID of the calendar to delete events from (e.g., 'primary' or 'work123@group.calendar.google.com').") String calendarId,
+            @ToolArg(description = "The name of the calendar to delete events from (e.g., 'ai test'). Supports fuzzy matching.") String calendarName,
             @ToolArg(description = "The search query to match event summaries (e.g., 'Team Meeting').") String query,
             @ToolArg(description = "Optional start date to filter events (ISO 8601 format, e.g., '2025-06-04T00:00:00').") String startDate,
             @ToolArg(description = "Optional end date to filter events (ISO 8601 format, e.g., '2025-06-04T23:59:59').") String endDate
     ) {
         try {
-            // Validate calendarId
-            if (calendarId == null || calendarId.trim().isEmpty()) {
-                throw new IllegalArgumentException("Calendar ID cannot be null or empty.");
+            // Resolve calendarName to calendarId
+            CalendarSelection calendarSelection = selectCalendarTool.selectCalendar(calendarName);
+            String calendarId = calendarSelection.getCalendarId();
+            if (calendarId == null) {
+                throw new IllegalArgumentException(calendarSelection.getMessage());
             }
 
             // Build the event list request
@@ -68,17 +74,21 @@ public class DeleteEvent {
         }
     }
 
-    @Tool(description = "Deletes all events from the specified Google Calendar within a specified date range. Requires authenticated Google Calendar API access. Possible errors: invalid date format, authentication issues, or API errors.")
+    @Tool(description = "Deletes all events from the specified Google Calendar within a specified date range.")
     public String deleteEventsByDateRange(
-            @ToolArg(description = "The ID of the calendar to delete events from (e.g., 'primary' or 'work123@group.calendar.google.com').") String calendarId,
+            @ToolArg(description = "The name of the calendar to delete events from (e.g., 'ai test'). Supports fuzzy matching.") String calendarName,
             @ToolArg(description = "The start date and time in ISO 8601 format (e.g., '2025-06-04T00:00:00').") String startDate,
             @ToolArg(description = "The end date and time in ISO 8601 format (e.g., '2025-06-04T23:59:59').") String endDate
     ) {
         try {
-            // Validate inputs
-            if (calendarId == null || calendarId.trim().isEmpty()) {
-                throw new IllegalArgumentException("Calendar ID cannot be null or empty.");
+            // Resolve calendarName to calendarId
+            CalendarSelection calendarSelection = selectCalendarTool.selectCalendar(calendarName);
+            String calendarId = calendarSelection.getCalendarId();
+            if (calendarId == null) {
+                throw new IllegalArgumentException(calendarSelection.getMessage());
             }
+
+            // Validate date inputs
             validateDateTime(startDate, "startDate");
             validateDateTime(endDate, "endDate");
 
@@ -111,17 +121,21 @@ public class DeleteEvent {
         }
     }
 
-    @Tool(description = "Deletes an event or specific instance of a recurring event from the specified Google Calendar by event ID. Requires authenticated Google Calendar API access. Possible errors: invalid event ID, event not found, authentication issues, or API errors.")
+    @Tool(description = "Deletes an event or specific instance of a recurring event from the specified Google Calendar by event ID.")
     public String deleteRecurringEvent(
-            @ToolArg(description = "The ID of the calendar containing the event (e.g., 'primary' or 'work123@group.calendar.google.com').") String calendarId,
+            @ToolArg(description = "The name of the calendar containing the event (e.g., 'ai test'). Supports fuzzy matching.") String calendarName,
             @ToolArg(description = "The unique ID of the event to delete (e.g., 'abc123xyz789').") String eventId,
             @ToolArg(description = "Optional: Specific instance date to delete in ISO 8601 format (e.g., '2025-06-04T10:00:00'). If not provided, deletes all instances.") String instanceDate
     ) {
         try {
-            // Validate inputs
-            if (calendarId == null || calendarId.trim().isEmpty()) {
-                throw new IllegalArgumentException("Calendar ID cannot be null or empty.");
+            // Resolve calendarName to calendarId
+            CalendarSelection calendarSelection = selectCalendarTool.selectCalendar(calendarName);
+            String calendarId = calendarSelection.getCalendarId();
+            if (calendarId == null) {
+                throw new IllegalArgumentException(calendarSelection.getMessage());
             }
+
+            // Validate eventId
             if (eventId == null || eventId.trim().isEmpty()) {
                 throw new IllegalArgumentException("Event ID cannot be null or empty.");
             }
@@ -164,14 +178,16 @@ public class DeleteEvent {
         }
     }
 
-    @Tool(description = "Deletes ALL events from the specified Google Calendar. Use with caution. Requires authenticated Google Calendar API access. Possible errors: authentication issues or API errors.")
+    @Tool(description = "Deletes ALL events from the specified Google Calendar. Use with caution.")
     public String clearAllEvents(
-            @ToolArg(description = "The ID of the calendar to clear (e.g., 'primary' or 'work123@group.calendar.google.com').") String calendarId
+            @ToolArg(description = "The name of the calendar to clear (e.g., 'ai test'). Supports fuzzy matching.") String calendarName
     ) {
         try {
-            // Validate calendarId
-            if (calendarId == null || calendarId.trim().isEmpty()) {
-                throw new IllegalArgumentException("Calendar ID cannot be null or empty.");
+            // Resolve calendarName to calendarId
+            CalendarSelection calendarSelection = selectCalendarTool.selectCalendar(calendarName);
+            String calendarId = calendarSelection.getCalendarId();
+            if (calendarId == null) {
+                throw new IllegalArgumentException(calendarSelection.getMessage());
             }
 
             // Fetch and delete all events
@@ -183,6 +199,8 @@ public class DeleteEvent {
                 }
             }
             return "All events in calendar " + calendarId + " have been deleted.";
+        } catch (IllegalArgumentException e) {
+            throw new RuntimeException("Invalid input: " + e.getMessage());
         } catch (IOException e) {
             throw new RuntimeException("Failed to connect to Google Calendar API: " + e.getMessage());
         } catch (Exception e) {

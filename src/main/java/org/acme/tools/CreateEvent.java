@@ -7,18 +7,23 @@ import com.google.api.services.calendar.model.EventDateTime;
 import io.quarkiverse.mcp.server.Tool;
 import io.quarkiverse.mcp.server.ToolArg;
 import jakarta.inject.Inject;
+import org.acme.tools.extra.CalendarSelection;
 import org.acme.tools.extra.EventResponse;
 
 import java.io.IOException;
+
 
 public class CreateEvent {
 
     @Inject
     Calendar calendarService;
 
-    @Tool(description = "Creates a new event in the specified Google Calendar and returns the event ID. Requires authenticated Google Calendar API access. Possible errors: invalid date format, authentication issues, or API errors.")
+    @Inject
+    SelectCalendarTool selectCalendarTool;
+
+    @Tool(description = "Creates a new event in the specified calendar and returns its ID.")
     public EventResponse createEvent(
-            @ToolArg(description = "The ID of the calendar to create the event in (e.g., 'primary' or 'work123@group.calendar.google.com').") String calendarId,
+            @ToolArg(description = "The name of the calendar to create the event in (e.g., 'ai test'). Supports fuzzy matching.") String calendarName,
             @ToolArg(description = "The title or name of the event (e.g., 'Team Meeting').") String summary,
             @ToolArg(description = "The physical or virtual location of the event (e.g., 'Conference Room A' or 'Zoom').") String location,
             @ToolArg(description = "A detailed description of the event (e.g., agenda or notes).") String description,
@@ -27,9 +32,11 @@ public class CreateEvent {
             @ToolArg(description = "The time zone for the event (e.g., 'Europe/Madrid'). Defaults to 'Europe/Madrid' if not provided.") String timeZone
     ) {
         try {
-            // Validate calendarId
-            if (calendarId == null || calendarId.trim().isEmpty()) {
-                throw new IllegalArgumentException("Calendar ID cannot be null or empty.");
+            // Resolve calendarName to calendarId
+            CalendarSelection calendarSelection = selectCalendarTool.selectCalendar(calendarName);
+            String calendarId = calendarSelection.getCalendarId();
+            if (calendarId == null) {
+                throw new IllegalArgumentException(calendarSelection.getMessage());
             }
 
             Event event = new Event();
@@ -50,7 +57,7 @@ public class CreateEvent {
                     .setTimeZone(timeZone);
             event.setEnd(endTime);
 
-            // Insert the event into the specified calendar
+            // Insert the event into the selected calendar
             Event createdEvent = calendarService.events().insert(calendarId, event).execute();
             String eventId = createdEvent.getId();
             return new EventResponse("Event created successfully in calendar: " + calendarId, eventId);
