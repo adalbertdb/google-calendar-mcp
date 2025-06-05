@@ -17,15 +17,16 @@
 - Cuenta de Google
 - API google calendar
 - Credenciales de proyecto Google Cloud Console
-- Client MCP (goose, )
+- Client MCP
 
 ## Configuración
-1. Seguir los pasos de https://es.quarkus.io/get-started/
-2. Clonar el repositorio
-3. Crea un proyecto en Google Cloud https://console.cloud.google.com/welcome?inv=1&invt=AbzSaw&project=light-sunup-461210-i1, click en my first proyect y proyecto nuevo.
-4. Dentro del proyecto, APIS y servicios -> Biblioteca -> Google Calendar API -> Habilitar.
-5. Ir a: APIs y servicios -> Credenciales -> Crear credenciales -> Crear ID de cliente OAuth -> Configurar pantalla de consentimiento -> Crear cliente.
-6. Descargar JSON y copiarlo en la carpeta Resources.
+1. Clonar el repositorio
+2. Crea un proyecto en Google Cloud https://console.cloud.google.com/welcome?inv=1&invt=AbzSaw&project=light-sunup-461210-i1, click en my first proyect y proyecto nuevo.
+3. Dentro del proyecto, APIS y servicios -> Biblioteca -> Google Calendar API -> Habilitar.
+4. Ir a: APIs y servicios -> Credenciales -> Crear credenciales -> Crear ID de cliente OAuth -> Configurar pantalla de consentimiento -> Crear cliente.
+5. Descargar JSON y copiarlo en la carpeta Resources.
+6. Compilar: mvn clean install.
+7. Ejecutar el servidor: jbang target/calendar-mcp-1.0.0-SNAPSHOT-runner.jar
 
 ## Estructura del proyecto
 ```
@@ -35,18 +36,7 @@ src/
 │   │   └── org.acme/
 │   │       ├── GoogleAuthService.java    # Manejo de OAuth2 con Google
 │   │       ├── GoogleCalendarConfig.java # Cliente Calendar configurado
-│   │       └── tools/
-│   │           └── DeleteEvent.java      # Comandos para borrar eventos
-│   └── resources/
-│       └── credentials.json              # Clave de acceso OAuth
-```
-## Explicación
-pom.xml
-Archivo central de configuración del proyecto Maven.
-Declara que es un proyecto Quarkus, con dependencias para REST y el cliente de API de Google.
-
-### Servidor Quarkus
-- GoogleAuthService: Se importan paquetes de Google OAuth, JSON y Jakarta para que sea compatible con entornos Quarkus.
+│   │       └── tools/1. Seguir los pasos de https://es.quarkus.io/get-started/
 Las constantes JSON_FACTORY y SCOPES contienen las credenciales y los permisos que dan acceso al calendario.
 
     Método authorize(): 
