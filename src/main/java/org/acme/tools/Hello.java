@@ -4,9 +4,9 @@ import io.quarkiverse.mcp.server.Tool;
 import io.quarkiverse.mcp.server.ToolArg;
 
 public class Hello {
-    @Tool(description = "hello")
+    @Tool(description = "Hello tool to test communications, say hello to the user!")
 
-    String hello(@ToolArg(description = "name") String name) {
-        return "Hello from tool!"+name;
+    String hello(@ToolArg(description = "Name of the user") String name) {
+        return "Hello from tool! "+name;
     }
 }
