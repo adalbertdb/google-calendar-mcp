@@ -47,4 +47,4 @@ nb-configuration.xml
 #Credentials .json
 src/main/resources/credentials.json
 #server logs
-logs
+logs/
