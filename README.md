@@ -1,59 +1,87 @@
-# calendar-mcp
+# RETO 3 - Implementación de protocolo MCP con cliente y servidor 
 
-This project uses Quarkus, the Supersonic Subatomic Java Framework.
+## Opción A - Desarrollo completo del protocolo (cliente y servidor) 
+## Índice
+### · Requisitos
+### · Configuración
+### · Estructura del proyecto
+### · Explicación
+### · Notas técnicas
+### · Advertencias
 
-If you want to learn more about Quarkus, please visit its website: <https://quarkus.io/>.
+## Requisitos
+- Java 17 o superior
+- Maven
+- Docker
+- Quarkus
+- Cuenta de Google
+- API google calendar
+- Credenciales de proyecto Google Cloud Console
+- Client MCP (goose, )
 
-## Running the application in dev mode
+## Configuración
+1. Seguir los pasos de https://es.quarkus.io/get-started/
+2. Clonar el repositorio
+3. Crea un proyecto en Google Cloud https://console.cloud.google.com/welcome?inv=1&invt=AbzSaw&project=light-sunup-461210-i1, click en my first proyect y proyecto nuevo.
+4. Dentro del proyecto, APIS y servicios -> Biblioteca -> Google Calendar API -> Habilitar.
+5. Ir a: APIs y servicios -> Credenciales -> Crear credenciales -> Crear ID de cliente OAuth -> Configurar pantalla de consentimiento -> Crear cliente.
+6. Descargar JSON y copiarlo en la carpeta Resources.
 
-You can run your application in dev mode that enables live coding using:
+## Estructura del proyecto
+```
+src/
+├── main/
+│   ├── java/
+│   │   └── org.acme/
+│   │       ├── GoogleAuthService.java    # Manejo de OAuth2 con Google
+│   │       ├── GoogleCalendarConfig.java # Cliente Calendar configurado
+│   │       └── tools/
+│   │           └── DeleteEvent.java      # Comandos para borrar eventos
+│   └── resources/
+│       └── credentials.json              # Clave de acceso OAuth
+```
+## Explicación
+pom.xml
+Archivo central de configuración del proyecto Maven.
+Declara que es un proyecto Quarkus, con dependencias para REST y el cliente de API de Google.
 
-```shell script
-./mvnw quarkus:dev
+### Servidor Quarkus
+- GoogleAuthService: Se importan paquetes de Google OAuth, JSON y Jakarta para que sea compatible con entornos Quarkus.
+Las constantes JSON_FACTORY y SCOPES contienen las credenciales y los permisos que dan acceso al calendario.
+
+    Método authorize(): 
+
+    1. lee las credenciales y realiza el proceso de autorización.
+    2. Define como se va a autenticar el usuario, en este caso "setAccessType("offline")", permite el reaacceso sin tener que volver a auntenticar, guarda los tokens en un directorio llamado "tokens".
+    3. Inicia un servidor en local y abre el navegador mediante HTTP en el puerto 8888.
+    4. Autoriza al usuario, el usuario inicia sesión y guarda las credenciales.
+
+- GoogleCalendarConfig: devuelve el nombre del calendario de Google que se usará, el calendario principal se guarda como "primary"
+```
+@ApplicationScoped
+public class GoogleCalendarConfig {
+    @Produces
+    public String calendarId() {
+        return "primary";
+    }
+}
+
 ```
 
-> **_NOTE:_**  Quarkus now ships with a Dev UI, which is available in dev mode only at <http://localhost:8080/q/dev/>.
+### tools
+- CreateEvent: crea un evento nuevo en el calendario de Google del usuario. Define un endpoint REST (una URL de tipo POST) que, al recibir un JSON con información del evento.
+- DeleteEvent: elimina eventos existentes en el calendario de Google del usuario.
+    - deleteEventsByQuery(): borra eventos que coincidan con un texto de búsqueda.
+    - deleteEventsByDateRange(): borra todos los eventos que ocurran entre dos fechas.
+    - deleteRecurringEvent(): borra eventos por eventId o instanceDate.
+    - clearAllEvents(): Borra absolutamente todos los eventos
+## Notas técnicas
+- El calendario predeterminado usado es primary.
+- El flujo de autenticación usa LocalServerReceiver en el puerto 8888.
+- Los tokens se almacenan en tokens/ para permitir acceso "offline".
 
-## Packaging and running the application
+## Advertencias
+- Eliminar eventos es irreversible.
+- Asegúrate de tener permisos adecuados en el calendario.
+- No compartas el archivo credentials.json.
 
-The application can be packaged using:
-
-```shell script
-./mvnw package
-```
-
-It produces the `quarkus-run.jar` file in the `target/quarkus-app/` directory.
-Be aware that it’s not an _über-jar_ as the dependencies are copied into the `target/quarkus-app/lib/` directory.
-
-The application is now runnable using `java -jar target/quarkus-app/quarkus-run.jar`.
-
-If you want to build an _über-jar_, execute the following command:
-
-```shell script
-./mvnw package -Dquarkus.package.jar.type=uber-jar
-```
-
-The application, packaged as an _über-jar_, is now runnable using `java -jar target/*-runner.jar`.
-
-## Creating a native executable
-
-You can create a native executable using:
-
-```shell script
-./mvnw package -Dnative
-```
-
-Or, if you don't have GraalVM installed, you can run the native executable build in a container using:
-
-```shell script
-./mvnw package -Dnative -Dquarkus.native.container-build=true
-```
-
-You can then execute your native executable with: `./target/calendar-mcp-1.0.0-SNAPSHOT-runner`
-
-If you want to learn more about building native executables, please consult <https://quarkus.io/guides/maven-tooling>.
-
-## Related Guides
-
-- LangChain4j Core ([guide](https://docs.quarkiverse.io/quarkus-langchain4j/dev/index.html)): Provides the basic integration with LangChain4j
-- Camel Google Calendar ([guide](https://camel.apache.org/camel-quarkus/latest/reference/extensions/google-calendar.html)): Perform various operations on a Google Calendar
