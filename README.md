@@ -36,7 +36,29 @@ src/
 │   │   └── org.acme/
 │   │       ├── GoogleAuthService.java    # Manejo de OAuth2 con Google
 │   │       ├── GoogleCalendarConfig.java # Cliente Calendar configurado
-│   │       └── tools/1. Seguir los pasos de https://es.quarkus.io/get-started/
+│   │       └── tools/
+│   │           └── DeleteEvent.java      # Comandos para borrar eventos
+│   └── resources/
+│       └── credentials.json              # Clave de acceso OAuth
+
+```
+## Explicación
+pom.xml
+Archivo central de configuración del proyecto Maven.
+Declara que es un proyecto Quarkus, con dependencias para REST y el cliente de API de Google.
+
+En concreto la dependencia:
+```
+<dependency>
+    <groupId>io.quarkiverse.mcp</groupId>
+    <artifactId>quarkus-mcp-server-sse</artifactId>
+    <version>1.2.0</version>
+</dependency>
+```
+Mantiene la comunicación constante cliente-servidor mediante el MCP, 
+
+### Servidor Quarkus
+- GoogleAuthService: Se importan paquetes de Google OAuth, JSON y Jakarta para que sea compatible con entornos Quarkus.
 Las constantes JSON_FACTORY y SCOPES contienen las credenciales y los permisos que dan acceso al calendario.
 
     Método authorize(): 
@@ -46,17 +68,12 @@ Las constantes JSON_FACTORY y SCOPES contienen las credenciales y los permisos q
     3. Inicia un servidor en local y abre el navegador mediante HTTP en el puerto 8888.
     4. Autoriza al usuario, el usuario inicia sesión y guarda las credenciales.
 
-- GoogleCalendarConfig: devuelve el nombre del calendario de Google que se usará, el calendario principal se guarda como "primary"
+- GoogleCalendarConfig:sirve como configuración para inyección de dependencias, inyecta una dependencía que maneja la autenticación OAuth2 con Google
+```java
+@Inject
+GoogleAuthService authService;
 ```
-@ApplicationScoped
-public class GoogleCalendarConfig {
-    @Produces
-    public String calendarId() {
-        return "primary";
-    }
-}
-
-```
+La clase calendarService() permite que los servicios puedan crear eventos, acceder al calendario...sin estar autenticando constantemente.
 
 ### tools
 - CreateEvent: crea un evento nuevo en el calendario de Google del usuario. Define un endpoint REST (una URL de tipo POST) que, al recibir un JSON con información del evento.
@@ -65,9 +82,8 @@ public class GoogleCalendarConfig {
     - deleteEventsByDateRange(): borra todos los eventos que ocurran entre dos fechas.
     - deleteRecurringEvent(): borra eventos por eventId o instanceDate.
     - clearAllEvents(): Borra absolutamente todos los eventos
+
 ## Notas técnicas
-- El calendario predeterminado usado es primary.
-- El flujo de autenticación usa LocalServerReceiver en el puerto 8888.
 - Los tokens se almacenan en tokens/ para permitir acceso "offline".
 
 ## Advertencias
