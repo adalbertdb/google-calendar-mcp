@@ -163,3 +163,5 @@ src/main/
 Proyecto desarrollado en equipo como parte del **Reto 3: implementación del protocolo MCP**.
 
 - **Dennis Adalbert** — [@adalbertdb](https://github.com/adalbertdb)
+- **Ana Cristina** — [@AnaCristinaBA](https://github.com/AnaCristinaBA)
+- **Guillem Rodríguez** — [@DisnaKing](https://github.com/DisnaKing)
