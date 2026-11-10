@@ -160,7 +160,9 @@ src/main/
 
 ## 👥 Autoría
 
-Proyecto desarrollado en equipo como parte del **Reto 3: implementación del protocolo MCP**.
+Proyecto desarrollado en un equipo de cinco durante mis prácticas en **Odec** (mayo–junio 2025), como parte del **Reto 3: implementación del protocolo MCP**.
+
+Contribuidores en este repositorio:
 
 - **Dennis Adalbert** — [@adalbertdb](https://github.com/adalbertdb)
 - **Ana Cristina** — [@AnaCristinaBA](https://github.com/AnaCristinaBA)
